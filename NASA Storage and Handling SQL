@@ -1,5 +1,6 @@
-STORAGE SQL -----------------------------------------------------------------
+#The following is the T-SQL code used to extract the storage and handling reports from EXSIFBODB-P1:TLS_RPT
 
+STORAGE SQL -----------------------------------------------------------------
 SELECT
   [v_rpt_058_storage_report].[Begin Date],
   [v_rpt_058_storage_report].[End Date],
@@ -19,9 +20,7 @@ WHERE [v_rpt_058_storage_report].[Opration Reporting Area] = 'AMERICA'
   AND [v_rpt_058_storage_report].[Begin Date] = ''
   AND [v_rpt_058_storage_report].[End Date] = ''
 
-
 HANDLING SQL ---------------------------------------------------------------
-
 SELECT
   [v_rpt_059_handling].[Begin Date],
   [v_rpt_059_handling].[End Date],
