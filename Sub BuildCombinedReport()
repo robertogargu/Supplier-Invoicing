@@ -1,4 +1,4 @@
-#This VBA code is found in module 1 of NASA Storage and Handling Main.xlsx file
+#This VBA code is found in module 1 of NASA Storage and Handling Main.xlsm file
 
 Global RPTWB As Workbook
 ---------------------------------------------------------------------------------------------------------------------------------------
