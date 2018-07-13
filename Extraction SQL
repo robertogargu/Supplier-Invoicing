@@ -1,5 +1,5 @@
 #The following is the T-SQL code used to extract the storage and handling reports from database
-#This code is found in the "Variables" worksheet of the NASA Storage and Handling MAin.xlsm file
+#This code is found in the "Variables" worksheet of the NASA Storage and Handling Main.xlsm file
 
 STORAGE SQL -----------------------------------------------------------------
 SELECT
