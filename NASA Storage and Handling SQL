@@ -1,0 +1,40 @@
+STORAGE SQL -----------------------------------------------------------------
+
+SELECT
+  [v_rpt_058_storage_report].[Begin Date],
+  [v_rpt_058_storage_report].[End Date],
+  [v_rpt_058_storage_report].[Unit Prefix],
+  [v_rpt_058_storage_report].[Unit Number],
+  [v_rpt_058_storage_report].[Equipment Type],
+  [v_rpt_058_storage_report].[Activity Reference Number],
+  [v_rpt_058_storage_report].[Activity Date],
+  [v_rpt_058_storage_report].[Activity Input Date],
+  [v_rpt_058_storage_report].[Depot Code],
+  [v_rpt_058_storage_report].[Storage Begin Date],
+  [v_rpt_058_storage_report].[Storage End Date],
+  [v_rpt_058_storage_report].[Usd Storage Rate],
+  [v_rpt_058_storage_report].[Storage Free Days]
+FROM [v_rpt_058_storage_report]
+WHERE [v_rpt_058_storage_report].[Opration Reporting Area] = 'AMERICA'
+  AND [v_rpt_058_storage_report].[Begin Date] = ''
+  AND [v_rpt_058_storage_report].[End Date] = ''
+
+
+HANDLING SQL ---------------------------------------------------------------
+
+SELECT
+  [v_rpt_059_handling].[Begin Date],
+  [v_rpt_059_handling].[End Date],
+  [v_rpt_059_handling].[Unit Prefix],
+  [v_rpt_059_handling].[Unit Number],
+  [v_rpt_059_handling].[Equipment Type],
+  [v_rpt_059_handling].[Activity Ref No],
+  [v_rpt_059_handling].[Activity Date],
+  [v_rpt_059_handling].[Activity Input Date],
+  [v_rpt_059_handling].[Depot Code],
+  [v_rpt_059_handling].[Movement Type],
+  [v_rpt_059_handling].[Depot Usd Handling Rate]
+FROM [v_rpt_059_handling]
+WHERE [v_rpt_059_handling].[Operation Reporting Area] = 'AMERICA'
+  AND [v_rpt_059_handling].[Begin Date] = ''
+  AND [v_rpt_059_handling].[End Date] = ''
