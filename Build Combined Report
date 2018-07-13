@@ -1,0 +1,185 @@
+Global RPTWB As Workbook
+---------------------------------------------------------------------------------------------------------------------------------------
+Sub BuildCombinedReport()
+'This sub generates a billing file for all the storage and handling costs that EXSIF NASA is to pay each month
+
+Application.ScreenUpdating = False
+Application.DisplayAlerts = False
+
+'The code below extracts storage and handling billing files from the database using SQL code found in the "Variables" worksheet (hidden)
+With ThisWorkbook.Connections("RPT058_Storage").OLEDBConnection
+    .CommandText = Range("SQLtxtStorage").Value & Range("SQLtxtStorageAndBegin").Value & "'" & _
+        Range("txtBeginDate").Value & "'" & Range("SQLtxtStorageAndEnd").Value & "'" & Range("txtEndDate").Value & "'"
+    .Refresh
+End With
+With ThisWorkbook.Connections("RPT059_Handling").OLEDBConnection
+    .CommandText = Range("SQLtxtHandling").Value & Range("SQLtxtHandlingAndBegin").Value & "'" & _
+        Range("txtBeginDate").Value & "'" & Range("SQLtxtHandlingAndEnd").Value & "'" & Range("txtEndDate").Value & "'"
+    .Refresh
+End With
+
+CombineStorageAndHandling
+FillInfo
+
+RPTWB.Sheets(1).UsedRange.Columns.AutoFit
+RPTWB.Sheets(1).Range("A1").Activate
+
+Application.ScreenUpdating = True
+
+End Sub
+---------------------------------------------------------------------------------------------------------------------------------------
+Function CombineStorageAndHandling()
+'The following function combines the storage and handling reports into a single table
+
+For Each ws In Sheets: ws.Visible = True: Next
+
+ThisWorkbook.Sheets("Combined RPT").Copy
+Set RPTWB = ActiveWorkbook
+
+Dim CurrentReport As Variant
+Dim ActivePasteRow As Integer
+
+'Copy and paste items from Storage and Handling reports into the appropriate column of the combined report
+For i = 1 To 2
+    If i = 1 Then
+        CurrentReport = ThisWorkbook.Sheets("Handling").UsedRange.Value
+    ElseIf i = 2 Then
+        CurrentReport = ThisWorkbook.Sheets("Storage").UsedRange.Value
+    End If
+    
+    With RPTWB.Sheets(1)
+        For j = LBound(CurrentReport) + 1 To UBound(CurrentReport)
+            ActivePasteRow = .UsedRange.Rows.Count + 1              'Find next avaliable row in combined report
+            .Cells(ActivePasteRow, "B") = CurrentReport(j, 1)       'Begin Date
+            .Cells(ActivePasteRow, "C") = CurrentReport(j, 2)       'End Date
+            .Cells(ActivePasteRow, "D") = CurrentReport(j, 3)       'Unit Prefix
+            .Cells(ActivePasteRow, "E") = CurrentReport(j, 4)       'Unit Number
+            .Cells(ActivePasteRow, "G") = CurrentReport(j, 5)       'Equipment Type
+            .Cells(ActivePasteRow, "H") = CurrentReport(j, 6)       'Activity Ref No
+            .Cells(ActivePasteRow, "I") = CurrentReport(j, 7)       'Activity Date
+            .Cells(ActivePasteRow, "J") = CurrentReport(j, 8)       'Activity Input Date
+            If i = 1 Then
+                .Cells(ActivePasteRow, "A") = "Handling"            'Trx Type
+                .Cells(ActivePasteRow, "K") = CurrentReport(j, 10)  'Depot Code
+                .Cells(ActivePasteRow, "L") = CurrentReport(j, 9)   'Movement Type
+                .Cells(ActivePasteRow, "M") = CurrentReport(j, 11)  'Depot USD Handling Rate
+            ElseIf i = 2 Then
+                .Cells(ActivePasteRow, "A") = "Storage"             'Trx Type
+                .Cells(ActivePasteRow, "K") = CurrentReport(j, 9)   'Depot Code
+                .Cells(ActivePasteRow, "N") = CurrentReport(j, 10)  'Storage Begin Date
+                .Cells(ActivePasteRow, "O") = CurrentReport(j, 11)  'Storage End Date
+                .Cells(ActivePasteRow, "P") = CurrentReport(j, 12)  'USD Storage Rate
+                .Cells(ActivePasteRow, "Q") = CurrentReport(j, 13)  'Storage Free Days
+            End If
+        Next j
+    End With
+Next i
+
+RPTWB.Sheets(1).ListObjects.add(xlSrcRange, RPTWB.Sheets(1).UsedRange, , xlYes).Name = "Combined Report"
+
+ThisWorkbook.Sheets("Combined RPT").Visible = False
+ThisWorkbook.Sheets("Storage").Visible = False
+ThisWorkbook.Sheets("Handling").Visible = False
+ThisWorkbook.Sheets("Variables").Visible = False
+
+End Function
+---------------------------------------------------------------------------------------------------------------------------------------
+Function FillInfo()
+'This function fills in each line item's product code and amount to be paid
+
+RPTWB.Sheets(1).Activate
+
+Dim EquipmentType As String
+Dim ProductCode As String
+Dim DateStartPaying As Date
+Dim DateArriveAtDepot As Date
+Dim DateStorageBegin As Date
+Dim DateStorageEnd As Date
+Dim StorageFreeDays As Integer
+Dim StorageRate As Currency
+Dim HandlingRate As Currency
+Dim FinalCost As Currency
+
+
+For i = 2 To Range("A2").End(xlDown).Row
+    'Identify the product code based on the equipment type
+    EquipmentType = Cells(i, "G").Value
+    If EquipmentType = "CK" Or EquipmentType = "RA" Or EquipmentType = "RC" Or EquipmentType = "RD" Or EquipmentType = "RH" _
+        Or EquipmentType = "RI" Or EquipmentType = "RL" Or EquipmentType = "RP" Or EquipmentType = "RR" Or EquipmentType = "RS" _
+        Or EquipmentType = "RT" Or EquipmentType = "RW" Then
+        
+        ProductCode = "TNC001"
+    
+    ElseIf EquipmentType = "G1" Or EquipmentType = "G1517" Or EquipmentType = "G1627" Or EquipmentType = "G1722" _
+        Or EquipmentType = "G1723" Or EquipmentType = "G1727" Or EquipmentType = "G1815" Or EquipmentType = "G1825" _
+        Or EquipmentType = "G1827" Or EquipmentType = "G1927" Or EquipmentType = "G2015" Or EquipmentType = "G2027" _
+        Or EquipmentType = "G2034" Or EquipmentType = "G2111" Or EquipmentType = "G2210" Or EquipmentType = "G2221" _
+        Or EquipmentType = "G2227" Or EquipmentType = "G2234" Or EquipmentType = "G2310" Or EquipmentType = "G2327" _
+        Or EquipmentType = "G2406" Or EquipmentType = "G2420" Or EquipmentType = "G2420" Or EquipmentType = "G2422" _
+        Or EquipmentType = "G2511" Or EquipmentType = "G2427" Then
+        
+        ProductCode = "TNK004"
+    
+    ElseIf EquipmentType = "K2" Or EquipmentType = "K3" Or EquipmentType = "K7" Or EquipmentType = "T1" Or EquipmentType = "T3" _
+        Or EquipmentType = "T4" Or EquipmentType = "T5" Or EquipmentType = "T6" Or EquipmentType = "T7" Or EquipmentType = "T8" _
+        Or EquipmentType = "TC" Or EquipmentType = "TH" Or EquipmentType = "TK" Or EquipmentType = "TL" Or EquipmentType = "TT" _
+        Or EquipmentType = "W2" Or EquipmentType = "W3" Or EquipmentType = "W4" Or EquipmentType = "W5" Or EquipmentType = "Z1" _
+        Or EquipmentType = "Z2" Or EquipmentType = "Z3" Or EquipmentType = "Z4" Or EquipmentType = "Z5" Or EquipmentType = "Z6" _
+        Or EquipmentType = "Z7" Or EquipmentType = "Z8" Then
+        
+        ProductCode = "TNK001"
+        
+    ElseIf EquipmentType = "A1" Or EquipmentType = "D1" Or EquipmentType = "M4" Or EquipmentType = "R1" Or EquipmentType = "R2" _
+        Or EquipmentType = "RO" Or EquipmentType = "S1" Or EquipmentType = "S2" Or EquipmentType = "S3" Or EquipmentType = "S4" _
+        Or EquipmentType = "S9" Or EquipmentType = "T9" Or EquipmentType = "TD" Or EquipmentType = "TG" Or EquipmentType = "TN" _
+        Or EquipmentType = "TS" Or EquipmentType = "S417" Or EquipmentType = "S420" Or EquipmentType = "S2P4" _
+        Or EquipmentType = "S421" Or EquipmentType = "D1722" Then
+        
+        ProductCode = "TNK002"
+        
+    ElseIf EquipmentType = "B0" Or EquipmentType = "B1" Or EquipmentType = "B10" Or EquipmentType = "B11" Or EquipmentType = "B13" _
+        Or EquipmentType = "B15" Or EquipmentType = "B2" Or EquipmentType = "B37" Or EquipmentType = "B40" Or EquipmentType = "B41" _
+        Or EquipmentType = "B45" Then
+        
+        ProductCode = "TNK003"
+        
+    ElseIf EquipmentType = "R4" Then
+    
+        ProductCode = "TNC407"
+        
+    ElseIf EquipmentType = "S222" Or EquipmentType = "S227" Then
+    
+        ProductCode = "TNK407"
+        
+    End If
+    
+    'Calculate the final cost
+    If Cells(i, "A").Value = "Storage" Then
+        DateArriveAtDepot = Cells(i, "I").Value
+        StorageFreeDays = Cells(i, "Q").Value
+        DateStorageBegin = Cells(i, "N").Value
+        DateStorageEnd = Cells(i, "O").Value
+        DateStartPaying = DateAdd("d", StorageFreeDays, DateArriveAtDepot)
+        StorageRate = Cells(i, "P").Value
+        
+        If DateStartPaying <= DateStorageEnd Then
+            If DateStartPaying <= DateStorageBegin Then
+                FinalCost = ((DateStorageEnd - DateStorageBegin) + 1) * StorageRate
+            ElseIf DateStartPaying > DateStorageBegin Then
+                FinalCost = ((DateStorageEnd - DateStartPaying) + 1) * StorageRate
+            End If
+        Else:
+            FinalCost = 0
+        End If
+    ElseIf Cells(i, "A").Value = "Handling" Then
+        HandlingRate = Cells(i, "M").Value
+        FinalCost = HandlingRate
+    End If
+    
+    'Insert information into table
+    Cells(i, "F").Value = ProductCode
+    Cells(i, "R").Value = FinalCost
+Next i
+
+End Function
+
