@@ -1,2 +1,3 @@
 # Supplier-Invoicing
-Storage and Handling RPTs
+
+This repository holds all relevant files for processing supplier invoicing
