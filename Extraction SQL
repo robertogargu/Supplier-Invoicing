@@ -1,4 +1,5 @@
-#The following is the T-SQL code used to extract the storage and handling reports from EXSIFBODB-P1:TLS_RPT
+#The following is the T-SQL code used to extract the storage and handling reports from database
+#This code is found in the "Variables" worksheet of the NASA Storage and Handling MAin.xlsm file
 
 STORAGE SQL -----------------------------------------------------------------
 SELECT
